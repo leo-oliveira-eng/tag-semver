@@ -30,7 +30,11 @@ fi
 echo "New tag: $new_tag"
 
 # Configure the remote URL with the token for authentication
+echo "Setting up remote URL with authentication token..."
 git remote set-url origin https://x-access-token:${ACTIONS_TOKEN}@github.com/${GITHUB_REPOSITORY}
+
+# Verify remote URL is correctly set
+git remote -v
 
 # Create and push the new tag
 echo "Creating and pushing the new tag..."
