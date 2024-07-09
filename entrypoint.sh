@@ -8,6 +8,7 @@ echo "Starting tag creation process"
 
 # Fetch all tags
 echo "Fetching tags..."
+git remote set-url origin https://x-access-token:${ACTIONS_TOKEN}@github.com/${GITHUB_REPOSITORY}
 git fetch --tags
 
 # Get the latest tag or default to 0.0.0 if no tags exist
