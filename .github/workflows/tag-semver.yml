@@ -26,3 +26,5 @@ jobs:
 
     - name: Run Docker Action
       uses: ./
+      env:
+        ACTIONS_TOKEN: ${{ secrets.ACTIONS_TOKEN }}
