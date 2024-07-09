@@ -31,4 +31,4 @@ fi
 echo "New tag: $new_tag"
 
 # Output the new tag version
-echo "::set-output name=new_tag::$new_tag"
+echo "{name}={value}" >> $GITHUB_OUTPUT
