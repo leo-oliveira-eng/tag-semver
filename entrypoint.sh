@@ -1,5 +1,7 @@
 #!/bin/sh -l
 
+sh -c "git config --global --add safe.directory $PWD"
+
 set -e
 
 echo "Starting tag creation process"
