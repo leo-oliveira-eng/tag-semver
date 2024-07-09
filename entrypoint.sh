@@ -1,7 +1,5 @@
 #!/bin/sh -l
 
-sh -c "git config --global --add safe.directory $PWD"
-
 set -e
 
 echo "Starting tag creation process"
@@ -30,16 +28,5 @@ fi
 
 echo "New tag: $new_tag"
 
-# Configure the remote URL with the token for authentication
-echo "Setting up remote URL with authentication token..."
-git remote set-url origin https://x-access-token:${ACTIONS_TOKEN}@github.com/${GITHUB_REPOSITORY}
-
-# Verify remote URL is correctly set
-git remote -v
-
-# Create and push the new tag
-echo "Creating and pushing the new tag..."
-git tag $new_tag
-git push origin $new_tag
-
-echo "New tag created: $new_tag"
+# Output the new tag version
+echo "::set-output name=new_tag::$new_tag"
