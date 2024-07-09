@@ -6,6 +6,7 @@ set -e
 
 echo "Starting tag creation process"
 
+# Fetch all tags
 echo "Fetching tags..."
 git fetch --tags
 
@@ -27,6 +28,9 @@ else
 fi
 
 echo "New tag: $new_tag"
+
+# Configure the remote URL with the token for authentication
+git remote set-url origin https://x-access-token:${ACTIONS_TOKEN}@github.com/${GITHUB_REPOSITORY}
 
 # Create and push the new tag
 echo "Creating and pushing the new tag..."
