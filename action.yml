@@ -1,9 +1,13 @@
 name: 'Tag SemVer'
 description: 'Automatically create a tag using semver when a pull request is merged into a base branch.'
-inputs: {}
 outputs: {}
+inputs:
+  token:
+    required: true
+    description: GitHub token
+    
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
+  using: docker
+  image: Dockerfile
   env:
-    ACTIONS_TOKEN: ${{ inputs.token }}
+    GH_TOKEN: ${{ inputs.token }}

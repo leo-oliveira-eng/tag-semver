@@ -1,38 +1,62 @@
 #!/bin/sh
 set -e
 
-# Fix for Git "dubious ownership" issue
 git config --global --add safe.directory /github/workspace
 
-echo "Starting tag creation process"
-
-echo "Fetching tags..."
-git fetch --tags
-
-latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.1.0")
-branch_name=$(git rev-parse --abbrev-ref HEAD)
-
-echo "Latest tag: $latest_tag"
-echo "Branch name: $branch_name"
-
-version=$(echo "$latest_tag" | sed 's/^v//')
-major=$(echo "$version" | cut -d. -f1)
-minor=$(echo "$version" | cut -d. -f2)
-patch=$(echo "$version" | cut -d. -f3)
-
-# Default to 0.1.0 if empty
-major=${major:-0}
-minor=${minor:-1}
-patch=${patch:-0}
-
-# Simple bumping logic (patch)
-patch=$((patch + 1))
-new_tag="v$major.$minor.$patch"
-
-echo "New tag: $new_tag"
-
+echo "🔧 Setting up Git config"
 git config user.name "github-actions[bot]"
 git config user.email "github-actions[bot]@users.noreply.github.com"
 
-git tag "$new_tag"
-git push origin "$new_tag"
+echo "🔍 Getting PR number from event payload"
+PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+
+echo "🔍 Fetching PR labels..."
+LABELS=$(gh pr view "$PR_NUMBER" --json labels --jq '.labels[].name')
+
+echo "🏷️ PR Labels: $LABELS"
+
+if echo "$LABELS" | grep -q "semver:major"; then
+  BUMP="major"
+elif echo "$LABELS" | grep -q "semver:minor"; then
+  BUMP="minor"
+else
+  BUMP="patch"
+fi
+
+echo "📦 Bump type: $BUMP"
+
+echo "📥 Fetching tags..."
+git fetch --tags
+
+LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+echo "🏷️ Latest tag: $LATEST_TAG"
+
+VERSION=$(echo "$LATEST_TAG" | sed 's/^v//')
+MAJOR=$(echo "$VERSION" | cut -d. -f1)
+MINOR=$(echo "$VERSION" | cut -d. -f2)
+PATCH=$(echo "$VERSION" | cut -d. -f3)
+
+MAJOR=${MAJOR:-0}
+MINOR=${MINOR:-0}
+PATCH=${PATCH:-0}
+
+case "$BUMP" in
+  major)
+    MAJOR=$((MAJOR + 1))
+    MINOR=0
+    PATCH=0
+    ;;
+  minor)
+    MINOR=$((MINOR + 1))
+    PATCH=0
+    ;;
+  patch)
+    PATCH=$((PATCH + 1))
+    ;;
+esac
+
+NEW_TAG="v$MAJOR.$MINOR.$PATCH"
+echo "🚀 New tag: $NEW_TAG"
+
+git tag "$NEW_TAG"
+git push origin "$NEW_TAG"
