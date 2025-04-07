@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+# Fix for Git "dubious ownership" issue
+git config --global --add safe.directory /github/workspace
+
 echo "Starting tag creation process"
 
 echo "Fetching tags..."
