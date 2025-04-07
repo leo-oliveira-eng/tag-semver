@@ -16,6 +16,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Allow dubious ownership
+      run: git config --global --add safe.directory /github/workspace
+
     - name: Set up Git
       run: |
         git config user.name "github-actions[bot]"
