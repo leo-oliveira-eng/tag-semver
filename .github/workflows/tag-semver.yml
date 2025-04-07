@@ -4,6 +4,9 @@ on:
   pull_request:
     types: [closed]
 
+permissions:
+  contents: write
+
 jobs:
   tag:
     if: github.event.pull_request.merged == true
@@ -11,7 +14,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Set up Git
       run: |
@@ -24,7 +27,13 @@ jobs:
       run: |
         git remote set-url origin https://x-access-token:${{ secrets.ACTIONS_TOKEN }}@github.com/${{ github.repository }}
 
-    - name: Run Docker Action
+    - name: Run Docker Action to Calculate Tag
+      id: calculate_tag
       uses: ./
       env:
         ACTIONS_TOKEN: ${{ secrets.ACTIONS_TOKEN }}
+
+    - name: Create and Push Tag
+      run: |
+        git tag ${{ steps.calculate_tag.outputs.new_tag }}
+        git push origin ${{ steps.calculate_tag.outputs.new_tag }}

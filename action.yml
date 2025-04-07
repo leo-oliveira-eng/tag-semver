@@ -5,3 +5,5 @@ outputs: {}
 runs:
   using: 'docker'
   image: 'Dockerfile'
+  env:
+    ACTIONS_TOKEN: ${{ inputs.token }}
