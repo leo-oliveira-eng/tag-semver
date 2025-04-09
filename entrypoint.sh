@@ -4,9 +4,9 @@ set -e
 git config --global --add safe.directory /github/workspace
 
 # Logging helpers
-info() { echo "\033[1;34mℹ️ $*\033[0m"; }
-success() { echo "\033[1;32m✅ $*\033[0m"; }
-error() { echo "\033[1;31m❌ $*\033[0m" >&2; }
+info() { echo "::notice::ℹ️ $*"; }
+success() { echo "::notice::✅ $*"; }
+error() { echo "::error::❌ $*"; }
 
 # Required inputs
 if [ -z "$INPUT_TOKEN" ]; then
