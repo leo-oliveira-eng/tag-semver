@@ -9,4 +9,4 @@ RUN curl -fsSL https://github.com/cli/cli/releases/download/v2.69.0/gh_2.69.0_li
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-ENTRYPOINT ["/entrypoint.sh"]
+CMD ["bash", "/entrypoint.sh"]
