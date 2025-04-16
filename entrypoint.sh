@@ -48,11 +48,6 @@ for LABEL in $LABELS; do
   esac
 done
 
-# Default to patch if no version label found
-if [ -z "$BUMP" ]; then
-  BUMP="patch"
-fi
-
 info "📦 Bump type: $BUMP"
 
 info "📥 Fetching tags..."
@@ -67,42 +62,78 @@ fi
 
 info "🏷️ Latest tag: $LATEST_TAG"
 VERSION=${LATEST_TAG#v}
-IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
 
-case "$BUMP" in
-  major)
-    MAJOR=$((MAJOR + 1))
-    MINOR=0
-    PATCH=0
-    ;;
-  minor)
-    MINOR=$((MINOR + 1))
-    PATCH=0
-    ;;
-  patch)
-    PATCH=$((PATCH + 1))
-    ;;
-esac
+MAJOR=0
+MINOR=0
+PATCH=0
+
+if [[ "$VERSION" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([^+]+))?(?:\+(.+))?$ ]]; then
+  MAJOR="${BASH_REMATCH[1]}"
+  MINOR="${BASH_REMATCH[2]}"
+  PATCH="${BASH_REMATCH[3]}"
+  LATEST_PRERELEASE_FULL="${BASH_REMATCH[4]}"
+  LATEST_BUILD="${BASH_REMATCH[5]}"
+
+  if [[ "$LATEST_PRERELEASE_FULL" =~ ^([^.]+)\.([0-9]+)$ ]]; then
+    LATEST_PRERELEASE="${BASH_REMATCH[1]}"
+    LATEST_PRERELEASE_VERSION="${BASH_REMATCH[2]}"
+  elif [ -n "$LATEST_PRERELEASE_FULL" ]; then
+    LATEST_PRERELEASE="$LATEST_PRERELEASE_FULL"
+    LATEST_PRERELEASE_VERSION=""
+  fi
+fi
 
 NEW_VERSION_BASE="$MAJOR.$MINOR.$PATCH"
 NEW_VERSION="$NEW_VERSION_BASE"
+INCREMENT_PRERELEASE=false
 
-# Handle pre-release versions
 if [ -n "$PRERELEASE" ]; then
-  LATEST_VERSION_BASE=$(echo "$VERSION" | sed -E 's/([^-+]+).*$/\1/')
-  LATEST_PRERELEASE=$(echo "$VERSION" | sed -E 's/^([^-]+)-([^+]+).*$/\2/' | sed -E 's/\.[0-9]+$//')
-  LATEST_PRERELEASE_VERSION=$(echo "$VERSION" | sed -E 's/^([^-]+)-([^+]+)\.([0-9]+).*$/\3/')
-
-  if [ "$LATEST_VERSION_BASE" = "$NEW_VERSION_BASE" ] && [ -n "$LATEST_PRERELEASE" ] && [ "$LATEST_PRERELEASE" = "$PRERELEASE" ]; then
+  if [ -n "$LATEST_PRERELEASE" ] && [ "$PRERELEASE" = "$LATEST_PRERELEASE" ]; then
     if [[ "$LATEST_PRERELEASE_VERSION" =~ ^[0-9]+$ ]]; then
+      PATCH=$((PATCH)) # Base version remains the same
       PRERELEASE_VERSION=$((LATEST_PRERELEASE_VERSION + 1))
-      NEW_VERSION="$NEW_VERSION-$PRERELEASE.$PRERELEASE_VERSION"
+      NEW_VERSION="$MAJOR.$MINOR.$PATCH-$PRERELEASE.$PRERELEASE_VERSION"
+      INCREMENT_PRERELEASE=true
     else
-      NEW_VERSION="$NEW_VERSION-$PRERELEASE.1"
+      PATCH=$((PATCH)) # Base version remains the same
+      NEW_VERSION="$MAJOR.$MINOR.$PATCH-$PRERELEASE.1"
+      INCREMENT_PRERELEASE=true
     fi
-  else
-    NEW_VERSION="$NEW_VERSION-$PRERELEASE.1"
   fi
+
+  if [ "$INCREMENT_PRERELEASE" = false ]; then
+    case "$BUMP" in
+      major)
+        MAJOR=$((MAJOR + 1))
+        MINOR=0
+        PATCH=0
+        ;;
+      minor)
+        MINOR=$((MINOR + 1))
+        PATCH=0
+        ;;
+      patch)
+        PATCH=$((PATCH + 1))
+        ;;
+    esac
+    NEW_VERSION="$MAJOR.$MINOR.$PATCH-$PRERELEASE.1"
+  fi
+else
+  case "$BUMP" in
+    major)
+      MAJOR=$((MAJOR + 1))
+      MINOR=0
+      PATCH=0
+      ;;
+    minor)
+      MINOR=$((MINOR + 1))
+      PATCH=0
+      ;;
+    patch)
+      PATCH=$((PATCH + 1))
+      ;;
+  esac
+  NEW_VERSION="$MAJOR.$MINOR.$PATCH"
 fi
 
 # Append build metadata if present
