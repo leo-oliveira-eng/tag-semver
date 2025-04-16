@@ -67,9 +67,7 @@ fi
 
 info "🏷️ Latest tag: $LATEST_TAG"
 VERSION=${LATEST_TAG#v}
-IFS='.' read -r MAJOR MINOR PATCH <<EOF
-$VERSION
-EOF
+IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
 
 case "$BUMP" in
   major)
@@ -86,12 +84,28 @@ case "$BUMP" in
     ;;
 esac
 
-NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+NEW_VERSION_BASE="$MAJOR.$MINOR.$PATCH"
+NEW_VERSION="$NEW_VERSION_BASE"
 
-# Append pre-release and build metadata if present
+# Handle pre-release versions
 if [ -n "$PRERELEASE" ]; then
-  NEW_VERSION="$NEW_VERSION-$PRERELEASE"
+  LATEST_VERSION_BASE=$(echo "$VERSION" | sed -E 's/([^-+]+).*$/\1/')
+  LATEST_PRERELEASE=$(echo "$VERSION" | sed -E 's/^([^-]+)-([^+]+).*$/\2/' | sed -E 's/\.[0-9]+$//')
+  LATEST_PRERELEASE_VERSION=$(echo "$VERSION" | sed -E 's/^([^-]+)-([^+]+)\.([0-9]+).*$/\3/')
+
+  if [ "$LATEST_VERSION_BASE" = "$NEW_VERSION_BASE" ] && [ -n "$LATEST_PRERELEASE" ] && [ "$LATEST_PRERELEASE" = "$PRERELEASE" ]; then
+    if [[ "$LATEST_PRERELEASE_VERSION" =~ ^[0-9]+$ ]]; then
+      PRERELEASE_VERSION=$((LATEST_PRERELEASE_VERSION + 1))
+      NEW_VERSION="$NEW_VERSION-$PRERELEASE.$PRERELEASE_VERSION"
+    else
+      NEW_VERSION="$NEW_VERSION-$PRERELEASE.1"
+    fi
+  else
+    NEW_VERSION="$NEW_VERSION-$PRERELEASE.1"
+  fi
 fi
+
+# Append build metadata if present
 if [ -n "$BUILD" ]; then
   NEW_VERSION="$NEW_VERSION+$BUILD"
 fi
