@@ -1,0 +1,34 @@
+name: Validate Action
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install validation tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats git jq shellcheck shfmt
+
+      - name: Lint shell scripts
+        run: shellcheck entrypoint.sh lib/*.sh scripts/export-marketplace-files.sh
+
+      - name: Check shell formatting
+        run: shfmt -d entrypoint.sh lib/*.sh scripts/export-marketplace-files.sh tests/*.bats
+
+      - name: Run Bats tests
+        run: bats tests/unit.bats tests/integration.bats
+
+      - name: Build Docker image
+        run: docker build .

@@ -1,0 +1,72 @@
+name: Sync Marketplace Repository
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release-tag:
+        description: "Optional tag to create in the Marketplace repository."
+        required: false
+        default: ""
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check configuration
+        env:
+          MARKETPLACE_REPO: ${{ secrets.MARKETPLACE_REPO }}
+          MARKETPLACE_TOKEN: ${{ secrets.MARKETPLACE_TOKEN }}
+        run: |
+          test -n "$MARKETPLACE_REPO" || { echo "Missing MARKETPLACE_REPO secret."; exit 1; }
+          test -n "$MARKETPLACE_TOKEN" || { echo "Missing MARKETPLACE_TOKEN secret."; exit 1; }
+
+      - name: Checkout development repository
+        uses: actions/checkout@v4
+
+      - name: Checkout Marketplace repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.MARKETPLACE_REPO }}
+          token: ${{ secrets.MARKETPLACE_TOKEN }}
+          path: marketplace-repo
+
+      - name: Export publishable files
+        run: bash scripts/export-marketplace-files.sh marketplace-repo
+
+      - name: Commit synced files
+        id: commit
+        working-directory: marketplace-repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [[ -z "$(git status --short)" ]]; then
+            echo "No file changes to commit."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git add .
+            git commit -m "Sync action files from development repository"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Push synced commit
+        if: ${{ steps.commit.outputs.changed == 'true' }}
+        working-directory: marketplace-repo
+        run: git push origin HEAD
+
+      - name: Create release tag in Marketplace repository
+        if: ${{ github.event_name == 'release' || inputs.release-tag != '' }}
+        working-directory: marketplace-repo
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release-tag }}
+        run: |
+          test -n "$RELEASE_TAG" || { echo "No release tag provided."; exit 1; }
+          if git rev-parse --verify --quiet "refs/tags/$RELEASE_TAG" >/dev/null; then
+            echo "Tag $RELEASE_TAG already exists in Marketplace repository."
+          else
+            git tag "$RELEASE_TAG"
+            git push origin "refs/tags/$RELEASE_TAG"
+          fi

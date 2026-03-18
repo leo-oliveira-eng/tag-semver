@@ -1,0 +1,65 @@
+name: "Tag SemVer on Merge"
+description: "Create the next Semantic Version tag from pull request labels after a merge."
+branding:
+  icon: "tag"
+  color: "blue"
+inputs:
+  token:
+    description: "GitHub token with contents:write and pull-requests:read permissions."
+    required: true
+  allowed-base-branches:
+    description: "Comma-separated list of base branches allowed to create tags."
+    required: false
+    default: "main,master"
+  tag-prefix:
+    description: "Prefix applied to SemVer tags. Use an empty string to disable the prefix."
+    required: false
+    default: "v"
+  major-label:
+    description: "Pull request label that triggers a major version bump."
+    required: false
+    default: "version:major"
+  minor-label:
+    description: "Pull request label that triggers a minor version bump."
+    required: false
+    default: "version:minor"
+  patch-label:
+    description: "Pull request label that triggers a patch version bump."
+    required: false
+    default: "version:patch"
+  prerelease-label-prefix:
+    description: "Label prefix used to declare a prerelease channel."
+    required: false
+    default: "pre-release:"
+  build-label-prefix:
+    description: "Label prefix used to declare build metadata."
+    required: false
+    default: "build:"
+  default-bump:
+    description: "Optional fallback bump when no bump label is found. Allowed values: major, minor, patch."
+    required: false
+    default: ""
+  dry-run:
+    description: "When true, compute outputs without creating or pushing a tag."
+    required: false
+    default: "false"
+outputs:
+  previous-tag:
+    description: "Latest SemVer tag found before calculating the next version."
+  next-tag:
+    description: "New tag computed from the pull request labels."
+  base-branch:
+    description: "Base branch from the merged pull request."
+  bump-type:
+    description: "Version bump selected for the run."
+  prerelease:
+    description: "Prerelease channel used for the run, if any."
+  build-metadata:
+    description: "Build metadata used for the run, if any."
+  tag-created:
+    description: "Whether the action created and pushed a tag."
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  env:
+    GH_TOKEN: ${{ inputs.token }}
