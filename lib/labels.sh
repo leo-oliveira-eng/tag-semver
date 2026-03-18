@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# shellcheck disable=SC2034
 PARSED_BUMP_TYPE=""
 PARSED_PRERELEASE_CHANNEL=""
 PARSED_BUILD_LABEL=""

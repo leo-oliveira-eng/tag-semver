@@ -6,7 +6,6 @@ PARSED_MAJOR=""
 PARSED_MINOR=""
 PARSED_PATCH=""
 PARSED_PRERELEASE=""
-PARSED_BUILD_METADATA=""
 
 normalize_bump_type() {
   case "$1" in
@@ -90,7 +89,6 @@ parse_semver_version() {
   fi
 
   PARSED_PRERELEASE="$prerelease"
-  PARSED_BUILD_METADATA="$build_metadata"
   return 0
 }
 
