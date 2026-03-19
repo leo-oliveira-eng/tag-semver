@@ -25,7 +25,7 @@ jobs:
         run: shellcheck entrypoint.sh lib/*.sh scripts/export-marketplace-files.sh
 
       - name: Check shell formatting
-        run: shfmt -d entrypoint.sh lib/*.sh scripts/export-marketplace-files.sh tests/*.bats
+        run: shfmt -i 2 -d entrypoint.sh lib/*.sh scripts/export-marketplace-files.sh tests/*.bats
 
       - name: Run Bats tests
         run: bats tests/unit.bats tests/integration.bats
