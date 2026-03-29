@@ -9,12 +9,12 @@ PARSED_PRERELEASE=""
 
 normalize_bump_type() {
   case "$1" in
-    major | minor | patch)
-      printf '%s' "$1"
-      ;;
-    *)
-      return 1
-      ;;
+  major | minor | patch)
+    printf '%s' "$1"
+    ;;
+  *)
+    return 1
+    ;;
   esac
 }
 
@@ -139,29 +139,6 @@ calculate_next_tag() {
 
     if [[ -z "$version" ]]; then
       case "$bump_type" in
-        major)
-          ((major += 1))
-          minor=0
-          patch=0
-          ;;
-        minor)
-          ((minor += 1))
-          patch=0
-          ;;
-        patch)
-          ((patch += 1))
-          ;;
-        *)
-          error "Unsupported bump type: $bump_type"
-          return 1
-          ;;
-      esac
-
-      next_prerelease="${prerelease_channel}.1"
-      version="${major}.${minor}.${patch}-${next_prerelease}"
-    fi
-  else
-    case "$bump_type" in
       major)
         ((major += 1))
         minor=0
@@ -178,6 +155,29 @@ calculate_next_tag() {
         error "Unsupported bump type: $bump_type"
         return 1
         ;;
+      esac
+
+      next_prerelease="${prerelease_channel}.1"
+      version="${major}.${minor}.${patch}-${next_prerelease}"
+    fi
+  else
+    case "$bump_type" in
+    major)
+      ((major += 1))
+      minor=0
+      patch=0
+      ;;
+    minor)
+      ((minor += 1))
+      patch=0
+      ;;
+    patch)
+      ((patch += 1))
+      ;;
+    *)
+      error "Unsupported bump type: $bump_type"
+      return 1
+      ;;
     esac
 
     version="${major}.${minor}.${patch}"

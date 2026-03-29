@@ -18,12 +18,12 @@ trim() {
 
 is_truthy() {
   case "${1,,}" in
-    true | 1 | yes | y | on)
-      return 0
-      ;;
-    *)
-      return 1
-      ;;
+  true | 1 | yes | y | on)
+    return 0
+    ;;
+  *)
+    return 1
+    ;;
   esac
 }
 
