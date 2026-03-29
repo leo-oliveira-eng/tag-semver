@@ -25,10 +25,10 @@ jobs:
           test -n "$MARKETPLACE_TOKEN" || { echo "Missing MARKETPLACE_TOKEN secret."; exit 1; }
 
       - name: Checkout development repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Checkout Marketplace repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: ${{ secrets.MARKETPLACE_REPO }}
           token: ${{ secrets.MARKETPLACE_TOKEN }}
