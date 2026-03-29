@@ -177,8 +177,14 @@ When the pull request is closed without merge, or the base branch is not allowed
 - If label lookup fails, confirm the job has `pull-requests: read`.
 - If push fails, confirm the token has permission to create tags on the repository.
 
-## Marketplace Publishing Note
+## Contributing
 
-GitHub Marketplace requires the published action to live in a clean public repository that contains only the action files. This repository can stay as the development repository with tests and workflows, while a separate public repository is used for Marketplace publication. A maintainer guide for that setup is available in [docs/releasing.md](docs/releasing.md).
+Issues and pull requests are welcome.
 
-The publishable action files now include the root `entrypoint.sh` plus the `lib/` directory that contains the runtime modules.
+For contributors and maintainers:
+
+- run the validation checks before opening a pull request
+- keep the label contract and output behavior backward compatible when possible
+- update the README when inputs, outputs, or label behavior change
+
+The release and Marketplace publishing workflow for maintainers is documented in [docs/releasing.md](docs/releasing.md).
